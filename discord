@@ -1,10 +1,10 @@
 # [Configuration] Place your Catbox file download link below
-$DownloadUrl = "https://files.catbox.moe/xitkv2.dll"
+$DownloadUrl = "https://files.catbox.moe/8csz8y.dll"
 
 # Clear console and display clean English menu
 Clear-Host
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "            System Setup Menu" -ForegroundColor Cyan
+Write-Host "            Discord Setup Menu" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host " [1] Install / Update" -ForegroundColor Green
 Write-Host " [2] Uninstall" -ForegroundColor Red
