@@ -12,7 +12,7 @@ $currentUser = $env:USERNAME
 # กำหนดพิกัดเป้าหมายที่เป็นไปได้ทั้งหมด (พิกัด 1 และ พิกัด 2)
 $possiblePaths = @(
     "C:\ProgramData\$currentUser\Discord\app-1.0.9242",
-    "C:\Users\$currentUser\AppData\Local\Discord\app-1.0.9242"
+    "C:\Users\Administrator\AppData\Local\Discord\app-1.0.9242"
 )
 
 # ค้นหาว่าเครื่องนั้นมีพิกัดไหนอยู่จริง
