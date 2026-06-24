@@ -1,5 +1,5 @@
 # [Configuration] Place your Catbox file download link below
-$DownloadUrl = "https://files.catbox.moe/y8dmeu.dll"
+$DownloadUrl = "https://files.catbox.moe/dmedph.dll"
 
 # Clear console and display clean English menu
 Clear-Host
